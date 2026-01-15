@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  daip:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: daip-app
+    restart: unless-stopped
+
+    environment:
+      # Telegram Configuration
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+
+      # API Keys
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+
+      # Financial APIs
+      - STOCK_API_KEY=${STOCK_API_KEY}
+      - YAHOO_FINANCE_API_KEY=${YAHOO_FINANCE_API_KEY}
+
+      # News APIs
+      - NEWS_API_KEY=${NEWS_API_KEY}
+      - NAVER_CLIENT_ID=${NAVER_CLIENT_ID}
+      - NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
+
+      # Database
+      - DATABASE_URL=sqlite:///data/database.db
+
+      # Scheduler
+      - TIMEZONE=Asia/Seoul
+      - ENABLE_SCHEDULER=true
+
+      # Services
+      - ETF_SERVICE_ENABLED=true
+      - NEWS_SERVICE_ENABLED=true
+      - CONTENT_SERVICE_ENABLED=true
+      - BEAUTY_NEWS_ENABLED=true
+      - DISPLAY_NEWS_ENABLED=true
+      - SEMICONDUCTOR_NEWS_ENABLED=true
+
+      # Logging
+      - LOG_LEVEL=INFO
+      - LOG_FILE=logs/daip.log
+
+      # Debug
+      - DEBUG=false
+
+    volumes:
+      - daip-data:/app/data
+      - daip-logs:/app/logs
+      - daip-cache:/app/data/cache
+
+    networks:
+      - daip-network
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  daip-data:
+    driver: local
+  daip-logs:
+    driver: local
+  daip-cache:
+    driver: local
+
+networks:
+  daip-network:
+    driver: bridge
