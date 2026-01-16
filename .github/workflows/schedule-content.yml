@@ -1,0 +1,60 @@
+name: Content Generation Service
+
+on:
+  schedule:
+    # Daily at 23:00 KST (14:00 UTC)
+    - cron: '0 14 * * *'
+  workflow_dispatch:
+    inputs:
+      content_type:
+        description: 'Type of content to generate (blog, newsletter, prediction, all)'
+        required: false
+        default: 'all'
+
+jobs:
+  generate-content:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-kor tesseract-ocr-jpn
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run content generation
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python main.py content
+
+      - name: Upload generated content
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-content-${{ github.run_number }}
+          path: data/content/
+          retention-days: 30
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-logs-${{ github.run_number }}
+          path: logs/
+          retention-days: 7
