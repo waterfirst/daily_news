@@ -17,6 +17,7 @@ from src.services.industry_news import (
     run_display_news,
     run_semiconductor_news
 )
+from src.services.content_generator import run_content_generation
 from src.telegram_bot import get_telegram_bot
 
 
@@ -73,6 +74,11 @@ class DAIPApplication:
             logger.info("Configuring semiconductor news service")
             self.scheduler.setup_semiconductor_news_service(run_semiconductor_news)
 
+        # Setup content generation service
+        if settings.content_service_enabled:
+            logger.info("Configuring content generation service")
+            self.scheduler.setup_content_service(run_content_generation)
+
         logger.info("Scheduler setup complete")
 
     def send_startup_notification(self) -> None:
@@ -97,6 +103,8 @@ class DAIPApplication:
                 message += "✅ 디스플레이 뉴스\n"
             if settings.semiconductor_news_enabled:
                 message += "✅ 반도체/로봇/바이오 뉴스\n"
+            if settings.content_service_enabled:
+                message += "✅ AI 콘텐츠 생성\n"
 
             message += "\n━━━━━━━━━━━━━━━━━━━━━━━\n"
             message += f"🕐 시작 시각: {time.strftime('%Y-%m-%d %H:%M:%S')}"
@@ -171,7 +179,7 @@ def run_single_service(service_name: str) -> None:
     Run a single service manually (for testing or GitHub Actions)
 
     Args:
-        service_name: Name of service to run (etf, news, beauty, display, semiconductor)
+        service_name: Name of service to run (etf, news, beauty, display, semiconductor, content)
     """
     logger.info(f"Running single service: {service_name}")
 
@@ -186,6 +194,8 @@ def run_single_service(service_name: str) -> None:
             run_display_news()
         elif service_name == "semiconductor":
             run_semiconductor_news()
+        elif service_name == "content":
+            run_content_generation()
         else:
             logger.error(f"Unknown service: {service_name}")
             sys.exit(1)

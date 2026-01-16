@@ -223,7 +223,7 @@ pytest tests/
 
 - [x] Phase 1: Core Infrastructure
 - [x] Phase 2: 기본 서비스 구현 (ETF, 뉴스, 산업별 뉴스)
-- [ ] Phase 3: AI 콘텐츠 생성 서비스
+- [x] Phase 3: AI 콘텐츠 생성 서비스 + OCR 통합
 - [ ] Phase 4: 대학생 웹앱 개발
 - [ ] Phase 5: 클라우드 배포 및 최적화
 - [ ] Phase 6: 수익화 전략 실행
