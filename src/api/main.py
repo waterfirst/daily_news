@@ -83,6 +83,9 @@ app.include_router(routers.learning_router, prefix="/api/learning", tags=["Learn
 app.include_router(routers.quiz_router, prefix="/api/quiz", tags=["Quiz"])
 app.include_router(routers.user_router, prefix="/api/users", tags=["Users"])
 app.include_router(routers.analytics_router, prefix="/api/analytics", tags=["Analytics"])
+app.include_router(routers.social_router, prefix="/api/social", tags=["Social"])
+app.include_router(routers.chat_router, prefix="/api/chat", tags=["AI Tutor"])
+app.include_router(routers.notifications_router, prefix="/api/notifications", tags=["Notifications"])
 
 
 # Error handlers

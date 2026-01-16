@@ -167,6 +167,94 @@ class GeneratedContentDB(Base):
     generated_at = Column(DateTime, default=datetime.utcnow, index=True)
 
 
+class StudyGroup(Base):
+    """Study groups for collaborative learning"""
+    __tablename__ = "study_groups"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text)
+    category = Column(String, index=True)
+    max_members = Column(Integer, default=10)
+    is_public = Column(Boolean, default=True)
+    created_by = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    members = relationship("StudyGroupMember", back_populates="group")
+    activities = relationship("GroupActivity", back_populates="group")
+
+
+class StudyGroupMember(Base):
+    """Study group members"""
+    __tablename__ = "study_group_members"
+
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey("study_groups.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    role = Column(String, default="member")  # admin, moderator, member
+    joined_at = Column(DateTime, default=datetime.utcnow)
+    points = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+
+    # Relationships
+    group = relationship("StudyGroup", back_populates="members")
+
+
+class GroupActivity(Base):
+    """Activity feed for study groups"""
+    __tablename__ = "group_activities"
+
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey("study_groups.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    activity_type = Column(String)  # quiz_completed, material_shared, comment, achievement
+    content = Column(Text)
+    metadata = Column(JSON)  # Additional activity data
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+    # Relationships
+    group = relationship("StudyGroup", back_populates="activities")
+
+
+class ChatMessage(Base):
+    """AI tutor chat messages"""
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    session_id = Column(String, index=True)  # Chat session identifier
+    role = Column(String, nullable=False)  # user, assistant, system
+    content = Column(Text, nullable=False)
+    context = Column(JSON)  # Related learning material, news, etc.
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+
+class Achievement(Base):
+    """User achievements and badges"""
+    __tablename__ = "achievements"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text)
+    icon = Column(String)
+    category = Column(String)  # quiz, streak, social, learning
+    requirement = Column(JSON)  # Achievement requirements
+    points = Column(Integer, default=0)
+
+
+class UserAchievement(Base):
+    """User earned achievements"""
+    __tablename__ = "user_achievements"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    achievement_id = Column(Integer, ForeignKey("achievements.id"), nullable=False)
+    earned_at = Column(DateTime, default=datetime.utcnow)
+    metadata = Column(JSON)  # Progress data
+
+
 # Database engine and session management
 class DatabaseManager:
     """Database manager for DAIP"""
