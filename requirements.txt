@@ -4,7 +4,6 @@ pydantic==2.5.3
 pydantic-settings==2.1.0
 
 # Telegram
-python-telegram-bot==20.7
 pyTelegramBotAPI==4.14.0
 
 # Scheduler
@@ -41,9 +40,7 @@ Pillow==10.2.0
 python-dateutil==2.8.2
 
 # HTTP & Async
-httpx==0.26.0
 aiohttp==3.9.1
-asyncio==3.4.3
 
 # Utilities
 colorlog==6.8.0

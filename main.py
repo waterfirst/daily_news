@@ -9,16 +9,6 @@ import time
 
 from src.config import settings
 from src.logger import main_logger as logger
-from src.schedulers.job_scheduler import ServiceScheduler
-from src.services.etf_analyzer import run_etf_analysis
-from src.services.news_scraper import run_news_scraping
-from src.services.industry_news import (
-    run_beauty_news,
-    run_display_news,
-    run_semiconductor_news
-)
-from src.services.content_generator import run_content_generation
-from src.telegram_bot import get_telegram_bot
 
 
 class DAIPApplication:
@@ -46,6 +36,16 @@ class DAIPApplication:
     def setup_scheduler(self) -> None:
         """Setup and configure the job scheduler"""
         logger.info("Setting up scheduler")
+
+        from src.schedulers.job_scheduler import ServiceScheduler
+        from src.services.etf_analyzer import run_etf_analysis
+        from src.services.news_scraper import run_news_scraping
+        from src.services.industry_news import (
+            run_beauty_news,
+            run_display_news,
+            run_semiconductor_news
+        )
+        from src.services.content_generator import run_content_generation
 
         self.scheduler = ServiceScheduler()
 
@@ -84,6 +84,7 @@ class DAIPApplication:
     def send_startup_notification(self) -> None:
         """Send startup notification via Telegram"""
         try:
+            from src.telegram_bot import get_telegram_bot
             bot = get_telegram_bot()
             message = """
 🚀 <b>DAIP 시스템 시작</b>
@@ -153,6 +154,7 @@ class DAIPApplication:
 
         try:
             # Send shutdown notification
+            from src.telegram_bot import get_telegram_bot
             bot = get_telegram_bot()
             message = f"""
 ⚠️ <b>DAIP 시스템 종료</b>
@@ -185,16 +187,22 @@ def run_single_service(service_name: str) -> None:
 
     try:
         if service_name == "etf":
+            from src.services.etf_analyzer import run_etf_analysis
             run_etf_analysis()
         elif service_name == "news":
+            from src.services.news_scraper import run_news_scraping
             run_news_scraping(use_mock=False)
         elif service_name == "beauty":
+            from src.services.industry_news import run_beauty_news
             run_beauty_news()
         elif service_name == "display":
+            from src.services.industry_news import run_display_news
             run_display_news()
         elif service_name == "semiconductor":
+            from src.services.industry_news import run_semiconductor_news
             run_semiconductor_news()
         elif service_name == "content":
+            from src.services.content_generator import run_content_generation
             run_content_generation()
         else:
             logger.error(f"Unknown service: {service_name}")
