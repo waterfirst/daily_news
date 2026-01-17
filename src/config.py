@@ -217,6 +217,7 @@ class ContentConfig:
     SCHEDULE_TIME = "23:00"
     CONTENT_TYPES = ["column", "travel", "tech_analysis"]
     OUTPUT_FORMATS = ["blog", "newsletter", "pdf"]
+    OUTPUT_DIR = str(BASE_DIR / "data" / "content")
     MIN_WORDS = 500
     MAX_WORDS = 2000
 

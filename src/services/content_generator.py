@@ -72,11 +72,19 @@ class ContentGenerator:
             api_key: Anthropic API key
         """
         self.api_key = api_key or settings.anthropic_api_key
-        if not self.api_key:
-            logger.warning("Anthropic API key not configured")
-            self.client = None
+        self.client = None
+        self.enabled = True
+
+        if not self.api_key or not self.api_key.strip():
+            logger.warning("Anthropic API key not configured - content generation will be disabled")
+            self.enabled = False
         else:
-            self.client = anthropic.Client(api_key=self.api_key)
+            try:
+                self.client = anthropic.Client(api_key=self.api_key)
+                logger.info("Claude API client initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize Claude API client: {str(e)}")
+                self.enabled = False
 
         self.telegram_bot = get_telegram_bot()
         self.output_dir = Path(ContentConfig.OUTPUT_DIR)
@@ -383,6 +391,11 @@ class ContentGenerator:
         try:
             logger.info("Starting daily content generation")
 
+            if not self.enabled:
+                logger.warning("Content generation is disabled - API key not configured")
+                logger.info("Content generation service completed (skipped - no API key)")
+                return True
+
             # Generate blog post
             blog = self.generate_blog_post(
                 topic="AI와 자동화가 바꾸는 미래",
@@ -402,22 +415,33 @@ class ContentGenerator:
                 self.save_content(prediction)
                 logger.info(f"Prediction generated: {prediction.title}")
 
-            # Send notification
-            message = "📝 <b>일일 콘텐츠 생성 완료</b>\n\n"
-            if blog:
-                message += f"✅ Blog: {blog.title}\n"
-            if prediction:
-                message += f"✅ Column: {prediction.title}\n"
+            # Send notification (but don't fail if telegram fails)
+            try:
+                message = "📝 <b>일일 콘텐츠 생성 완료</b>\n\n"
+                if blog:
+                    message += f"✅ Blog: {blog.title}\n"
+                if prediction:
+                    message += f"✅ Column: {prediction.title}\n"
 
-            message += f"\n🕐 생성 시각: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                message += f"\n🕐 생성 시각: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 
-            self.telegram_bot.send_message(message)
+                telegram_success = self.telegram_bot.send_message(message)
+                if telegram_success:
+                    logger.info("Content generation notification sent via Telegram")
+                else:
+                    logger.warning("Could not send notification via Telegram")
+            except Exception as notify_error:
+                logger.error(f"Failed to send Telegram notification: {str(notify_error)}")
 
+            logger.info("Daily content generation completed successfully")
             return True
 
         except Exception as e:
-            logger.error(f"Daily content generation failed: {str(e)}")
-            self.telegram_bot.send_error_notification("Content Generator", str(e))
+            logger.error(f"Daily content generation failed: {str(e)}", exc_info=True)
+            try:
+                self.telegram_bot.send_error_notification("Content Generator", str(e))
+            except Exception as notify_error:
+                logger.error(f"Failed to send error notification: {str(notify_error)}")
             return False
 
 
