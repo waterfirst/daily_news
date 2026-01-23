@@ -2,12 +2,9 @@
 Telegram Bot for Daily Automated Intelligence Platform (DAIP)
 Sends notifications and reports via Telegram
 """
-import asyncio
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 import telebot
-from telebot.async_telebot import AsyncTeleBot
-from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 from src.config import settings
 from src.logger import setup_logger
@@ -28,16 +25,23 @@ class TelegramBot:
         """
         self.token = token or settings.telegram_bot_token
         self.chat_id = chat_id or settings.telegram_chat_id
+        self.bot = None
+        self.enabled = True
 
-        if not self.token:
-            logger.error("Telegram bot token not configured")
-            raise ValueError("TELEGRAM_BOT_TOKEN must be set in environment variables")
+        if not self.token or not self.token.strip():
+            logger.warning("Telegram bot token not configured - bot will be disabled")
+            self.enabled = False
+            return
 
-        if not self.chat_id:
+        if not self.chat_id or not self.chat_id.strip():
             logger.warning("Telegram chat ID not configured, messages won't be sent by default")
 
-        self.bot = telebot.TeleBot(self.token)
-        logger.info("Telegram bot initialized successfully")
+        try:
+            self.bot = telebot.TeleBot(self.token)
+            logger.info("Telegram bot initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize Telegram bot: {str(e)}")
+            self.enabled = False
 
     def send_message(
         self,
@@ -58,8 +62,12 @@ class TelegramBot:
         Returns:
             True if successful, False otherwise
         """
+        if not self.enabled or not self.bot:
+            logger.warning("Telegram bot is disabled, skipping message send")
+            return False
+
         target_chat_id = chat_id or self.chat_id
-        if not target_chat_id:
+        if not target_chat_id or not target_chat_id.strip():
             logger.error("No chat ID provided")
             return False
 

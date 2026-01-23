@@ -111,16 +111,23 @@ class BeautyNewsScraper:
             ]
 
             # Send via Telegram
-            success = self.telegram_bot.send_beauty_news(news_data)
+            telegram_success = self.telegram_bot.send_beauty_news(news_data)
 
-            if success:
+            if telegram_success:
                 logger.info("Beauty news report sent successfully")
+            else:
+                logger.warning("Beauty news report could not be sent via Telegram")
 
-            return success
+            # Return True if we successfully scraped news, regardless of telegram status
+            logger.info(f"Beauty news scraping completed: found {len(articles)} articles")
+            return True
 
         except Exception as e:
-            logger.error(f"Beauty news scraping failed: {str(e)}")
-            self.telegram_bot.send_error_notification("Beauty News Scraper", str(e))
+            logger.error(f"Beauty news scraping failed: {str(e)}", exc_info=True)
+            try:
+                self.telegram_bot.send_error_notification("Beauty News Scraper", str(e))
+            except Exception as notify_error:
+                logger.error(f"Failed to send error notification: {str(notify_error)}")
             return False
 
 
@@ -219,16 +226,23 @@ class DisplayNewsScraper:
             ]
 
             # Send via Telegram
-            success = self.telegram_bot.send_display_news(news_data)
+            telegram_success = self.telegram_bot.send_display_news(news_data)
 
-            if success:
+            if telegram_success:
                 logger.info("Display news report sent successfully")
+            else:
+                logger.warning("Display news report could not be sent via Telegram")
 
-            return success
+            # Return True if we successfully scraped news, regardless of telegram status
+            logger.info(f"Display news scraping completed: found {len(articles)} articles")
+            return True
 
         except Exception as e:
-            logger.error(f"Display news scraping failed: {str(e)}")
-            self.telegram_bot.send_error_notification("Display News Scraper", str(e))
+            logger.error(f"Display news scraping failed: {str(e)}", exc_info=True)
+            try:
+                self.telegram_bot.send_error_notification("Display News Scraper", str(e))
+            except Exception as notify_error:
+                logger.error(f"Failed to send error notification: {str(notify_error)}")
             return False
 
 
@@ -335,16 +349,23 @@ class SemiconductorNewsScraper:
             ]
 
             # Send via Telegram
-            success = self.telegram_bot.send_semiconductor_news(news_data)
+            telegram_success = self.telegram_bot.send_semiconductor_news(news_data)
 
-            if success:
+            if telegram_success:
                 logger.info("Semiconductor news report sent successfully")
+            else:
+                logger.warning("Semiconductor news report could not be sent via Telegram")
 
-            return success
+            # Return True if we successfully scraped news, regardless of telegram status
+            logger.info(f"Semiconductor news scraping completed: found {len(articles)} articles")
+            return True
 
         except Exception as e:
-            logger.error(f"Semiconductor news scraping failed: {str(e)}")
-            self.telegram_bot.send_error_notification("Semiconductor News Scraper", str(e))
+            logger.error(f"Semiconductor news scraping failed: {str(e)}", exc_info=True)
+            try:
+                self.telegram_bot.send_error_notification("Semiconductor News Scraper", str(e))
+            except Exception as notify_error:
+                logger.error(f"Failed to send error notification: {str(notify_error)}")
             return False
 
 
